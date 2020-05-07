@@ -6,20 +6,23 @@ log=log
 ## init ip.old
 
 while [ ! -f $ip_old ]; do
-        curl http://members.3322.org/dyndns/getip  > $ip_old
+        curl http://members.3322.org/dyndns/getip > $ip_old
 done
 ## get ip now
 
-curl http://members.3322.org/dyndns/getip > $ip_now
-## exit if fetch ip failed
-if [ ! -s $ip_now ]; then
+NEW_IP=$(curl http://members.3322.org/dyndns/getip)
+
+if [ ! $NEW_IP ]; then
         exit 0
 fi
 
+echo $NEW_IP > $ip_now
+
 /usr/bin/diff $ip_now $ip_old
 
-if [ $? != 0 ]; then
-        sed -i "\$a$(date) ------ IP change detected, previous ip: $(cat $ip_old), new ip: $(cat $ip_now)." $log
+if [ $? != 0 ];then
+#       sed -i "\$a$(date) ------ IP change detected, previous ip: $(cat $ip_old), new ip: $(cat $ip_now)." $log        
+        echo "$(date) ------ IP change detected, previous ip: $(cat $ip_old), new ip: $(cat $ip_now)." >> $log
         cat $ip_now > $ip_old
         curl "https://sc.ftqq.com/SCUKEY.send?text=$(cat $ip_now)";
 fi
